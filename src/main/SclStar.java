@@ -202,6 +202,32 @@ public class SclStar {
                 List<Alphabet<String>> Id = new ArrayList<>();
                 Alphabet<String> ICe = makeSet(minimalCe);
 
+                sigmaFamily.removeIf(ICe::containsAll);
+
+                sigmaFamily.add(ICe);
+
+                for(Alphabet<String> currAlpha : sigmaFamily) {
+                    for(String currAct : currAlpha) {
+                        if(ICe.contains(currAct) &&
+                                !(ICe.containsAll(currAlpha) && currAlpha.containsAll(ICe))) {
+                            Id.add(currAlpha);
+                        }
+                    }
+                }
+
+                if(!Id.isEmpty()) {
+                    List<Alphabet<String>> arg = new ArrayList<>(Id);
+                    if(!arg.contains(ICe))
+                        arg.add(ICe);
+
+                    Id = learnSynSets(arg);
+                }
+
+                if(!Id.isEmpty()) {
+                    sigmaFamily = merge(Id);
+                }
+
+
 
 
                 //Implementing the for loop:
@@ -373,6 +399,14 @@ public class SclStar {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private List<Alphabet<String>> merge(List<Alphabet<String>> id) {
+        return new ArrayList<>();
+    }
+
+    private List<Alphabet<String>> learnSynSets(List<Alphabet<String>> iD) {
+        return new ArrayList<>();
     }
 
     private boolean exist(Alphabet<String> sigmai){
