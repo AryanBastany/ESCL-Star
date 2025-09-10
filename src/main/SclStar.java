@@ -1,20 +1,14 @@
 package main;
 
-import com.google.common.collect.Lists;
 import de.learnlib.algorithms.lstar.mealy.ExtensibleLStarMealy;
 import de.learnlib.algorithms.lstar.mealy.ExtensibleLStarMealyBuilder;
 import de.learnlib.api.oracle.EquivalenceOracle;
 import de.learnlib.api.query.DefaultQuery;
 import de.learnlib.api.statistic.StatisticSUL;
 import de.learnlib.filter.statistic.Counter;
-import de.learnlib.filter.statistic.oracle.CounterOracle;
-import de.learnlib.oracle.equivalence.WpMethodEQOracle;
-import de.learnlib.oracle.membership.SULOracle;
 import de.learnlib.util.Experiment;
 import net.automatalib.automata.transducers.MealyMachine;
 import net.automatalib.automata.transducers.impl.compact.CompactMealy;
-import net.automatalib.automata.transducers.impl.compact.CompactMealyTransition;
-import net.automatalib.incremental.ConflictException;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
 import net.automatalib.words.impl.Alphabets;
@@ -26,10 +20,8 @@ import java.util.List;
 import de.learnlib.api.oracle.MembershipOracle;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import java.io.File;  // Import the File class
 import java.io.IOException;  // Import the IOException class to handle errors
 import java.io.FileWriter;   // Import the FileWriter class
 
@@ -118,45 +110,45 @@ public class SclStar {
     //LearnInParts ends!
 
     //UpdateSync starts:
-        Map<String,Word<String>> outSync = new HashMap<String, Word<String>>();
-        Collection<Integer> states = hypothesis.getStates();
-        Word<String> output_1 = null;
-        Word<String> output_2 = null;
-        ArrayList<String> syncToRemove = new ArrayList<>();
-        for (String m : sync){
-            System.out.println("For sync = " + m);
-            boolean isSync = true;
-            for(Integer si : states){
-                for(Integer sj : states){
-                    output_1 = hypothesis.getTransition(si, m).getOutput();
-                    output_2 = hypothesis.getTransition(sj, m).getOutput();
-                    if(!output_1.equals(output_2)){
-                        syncToRemove.add(m);
-                        isSync = false;
-                        break;
-                    }
-                }
-                if(!isSync){
-                    break;
-                }
-            }
-            if(isSync) {
-                boolean hasIt = false;
-                for (Map.Entry<String, Word<String>> current_map : outSync.entrySet()) {
-                    if (current_map.getKey().equals(m) && current_map.getValue().equals(output_1)) {
-                        hasIt = true;
-                        break;
-                    }
-                }
-                if (!hasIt) {
-                    outSync.put(m, output_1);
-                }
-            }
-        }
-        System.out.println("ToREmOVE : " + syncToRemove + "\n");
-        for(String toRemove : syncToRemove){
-            sync.remove(toRemove);
-        }
+//        Map<String,Word<String>> outSync = new HashMap<String, Word<String>>();
+//        Collection<Integer> states = hypothesis.getStates();
+//        Word<String> output_1 = null;
+//        Word<String> output_2 = null;
+//        ArrayList<String> syncToRemove = new ArrayList<>();
+//        for (String m : sync){
+//            System.out.println("For sync = " + m);
+//            boolean isSync = true;
+//            for(Integer si : states){
+//                for(Integer sj : states){
+//                    output_1 = hypothesis.getTransition(si, m).getOutput();
+//                    output_2 = hypothesis.getTransition(sj, m).getOutput();
+//                    if(!output_1.equals(output_2)){
+//                        syncToRemove.add(m);
+//                        isSync = false;
+//                        break;
+//                    }
+//                }
+//                if(!isSync){
+//                    break;
+//                }
+//            }
+//            if(isSync) {
+//                boolean hasIt = false;
+//                for (Map.Entry<String, Word<String>> current_map : outSync.entrySet()) {
+//                    if (current_map.getKey().equals(m) && current_map.getValue().equals(output_1)) {
+//                        hasIt = true;
+//                        break;
+//                    }
+//                }
+//                if (!hasIt) {
+//                    outSync.put(m, output_1);
+//                }
+//            }
+//        }
+//        System.out.println("ToREmOVE : " + syncToRemove + "\n");
+//        for(String toRemove : syncToRemove){
+//            sync.remove(toRemove);
+//        }
     //UpdateSync ends!
 
         @Nullable DefaultQuery<String, Word<Word<String>>> ce;
@@ -191,21 +183,26 @@ public class SclStar {
 
                 //ProcessCE starts:
                 //Building outCe:
-                List<String> ceList = minimalCe.asList();
-                int state = 0;
-                int nextState;
-                CompactMealyTransition<Word<String>> transition = null;
-                List<Word<String>> outCe = new ArrayList<>();
-                Word<String> output;
-                for (String currenntAlpha : ceList) {
-                    transition = mealyss.getTransition(state, currenntAlpha);
-                    output = transition.getOutput();
-                    nextState = transition.getSuccId();
-                    outCe.add(output);
-                    state = nextState;
-                }
-                System.out.println("MinimalCE: " + minimalCe);
-                System.out.println("Output of minimalCE : " + outCe + "\n");
+//                List<String> ceList = minimalCe.asList();
+//                int state = 0;
+//                int nextState;
+//                CompactMealyTransition<Word<String>> transition = null;
+//                List<Word<String>> outCe = new ArrayList<>();
+//                Word<String> output;
+//                for (String currenntAlpha : ceList) {
+//                    transition = mealyss.getTransition(state, currenntAlpha);
+//                    output = transition.getOutput();
+//                    nextState = transition.getSuccId();
+//                    outCe.add(output);
+//                    state = nextState;
+//                }
+//                System.out.println("MinimalCE: " + minimalCe);
+//                System.out.println("Output of minimalCE : " + outCe + "\n");
+
+                List<Alphabet<String>> Id = new ArrayList<>();
+                Alphabet<String> ICe = makeSet(minimalCe);
+
+
 
                 //Implementing the for loop:
                 ArrayList<String> toRemoveSync = new ArrayList<>();
@@ -607,6 +604,15 @@ public class SclStar {
         for (int i = 0; i < subset.length; i++)
             result.add(input.get(subset[i])) ;
         return result;
+    }
+
+    private Alphabet<String> makeSet(Word<String> ce) {
+        ArrayList<String> theSet = new ArrayList<>();
+        for(String action : ce) {
+            if(!theSet.contains(action))
+                theSet.add(action);
+        }
+        return Alphabets.fromList(theSet);
     }
 
     public Alphabet<String> getAlphabet() {
