@@ -224,7 +224,7 @@ public class SclStar {
                 }
 
                 if(!Id.isEmpty()) {
-                    sigmaFamily = merge(Id);
+                    merge(Id);
                 }
 
 
@@ -401,8 +401,56 @@ public class SclStar {
         }
     }
 
-    private List<Alphabet<String>> merge(List<Alphabet<String>> id) {
-        return new ArrayList<>();
+    private void merge(List<Alphabet<String>> iD) {
+        HashMap<String, List<Integer>> toMerge = new HashMap<>();
+
+        for (int alphaIndex = 0; alphaIndex < iD.size(); alphaIndex++) {
+            for (String currAct : iD.get(alphaIndex)) {
+                if(!toMerge.containsKey(currAct))
+                    toMerge.put(currAct, new ArrayList<>());
+                if(!toMerge.get(currAct).contains(alphaIndex))
+                    toMerge.get(currAct).add(alphaIndex);
+            }
+        }
+
+        List<String> toRemove = new ArrayList<>();
+        for(String currAct : toMerge.keySet()) {
+            for(String comparingAct : toMerge.keySet()) {
+                if(!currAct.equals(comparingAct)) {
+                    if(new HashSet<>(toMerge.get(comparingAct)).containsAll(toMerge.get(currAct))) {
+                        toRemove.add(currAct);
+                        break;
+                    }
+                }
+            }
+        }
+
+        for(String currRemoving : toRemove){
+            toMerge.remove(currRemoving);
+        }
+
+        HashSet<Integer> setsToRemove = new HashSet<>();
+        for(List<Integer> currList : toMerge.values()) {
+            setsToRemove.addAll(currList);
+        }
+
+        for(int currRemoving : setsToRemove) {
+            sigmaFamily.remove(iD.get(currRemoving));
+        }
+
+        List<Alphabet<String>> toAdd = new ArrayList<>();
+        for(List<Integer> currList : toMerge.values()) {
+            Alphabet<String> toAddAlpha = Alphabets.fromList(new ArrayList<>(iD.get(currList.getFirst())));
+            for(int i : currList) {
+                Alphabet<String> toMergeAlpha = iD.get(i);
+                for(String currAct : toMergeAlpha) {
+                    if(!toAddAlpha.contains(currAct))
+                        toAddAlpha.add(currAct);
+                }
+            }
+            toAdd.add(toAddAlpha);
+        }
+        sigmaFamily.addAll(toAdd);
     }
 
     private List<Alphabet<String>> learnSynSets(List<Alphabet<String>> iD) {
