@@ -16,8 +16,10 @@ public class ProductMealy{
 
     CompactMealy<String, Word<String>> fsm;
     int components_count;
+    List<String> wrongSyncs;
     public ProductMealy( CompactMealy<String, Word<String>> m1) {
         this.fsm = m1;
+        wrongSyncs = new ArrayList<>();
     }
 
     public ProductMealy mergeFSMs(CompactMealy<String, Word<String>> mealy_2, int componentsCount){
@@ -113,6 +115,14 @@ public class ProductMealy{
                     if (output_2 != null) {
                         output_2_string = output_2.toString();
                     }
+
+                    if(output_1 != null && output_2 != null) {
+                        if(!output_1.equals(output_2)) {
+                            if(!wrongSyncs.contains(a))
+                                wrongSyncs.add(a);
+                        }
+                    }
+
                     List<String> output_1_list = new ArrayList<String>(Arrays.asList(output_1_string.split(",")));
                     List<String> output_2_list = new ArrayList<String>(Arrays.asList(output_2_string.split(",")));
                     List<String> output_list = new ArrayList<>();
@@ -189,6 +199,7 @@ public class ProductMealy{
     public void setMachine (CompactMealy <String, Word<String>> machine){
         this.fsm = machine;
     }
+    public List<String> getWrongSyncs() { return wrongSyncs; }
 
     public int getComponents_count() {
         return components_count;

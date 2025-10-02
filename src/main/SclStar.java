@@ -231,79 +231,79 @@ public class SclStar {
 
 
                 //Implementing the for loop:
-                ArrayList<String> toRemoveSync = new ArrayList<>();
-                System.out.println("THE SYNC : " + sync);
-                System.out.println("OUTSYNC : " + outSync + "\n");
-                for (String syncAlpha : sync) {
-                    boolean isInCe = false;
-                    for (String ceSync : ceList) {
-                        if (ceSync.equals(syncAlpha)) {
-                            isInCe = true;
-                            break;
-                        }
-                    }
-                    if (isInCe) {
-                        for (Map.Entry<String, Word<String>> current_map : outSync.entrySet()) {
-                            for (int i = 0; i < ceList.size(); i++) {
-                                if (!ceList.get(i).equals(syncAlpha)) {
-                                    continue;
-                                }
-                                if (current_map.getKey().equals(syncAlpha) && !current_map.getValue().equals(outCe.get(i))) {
-                                    System.out.println("Removing SYNC : " + syncAlpha + "  because a different output in the ce");
-                                    System.out.println("OUTPUT for SYNC : " + current_map.getValue());
-                                    System.out.println("OUTPUT for Ce : " + outCe.get(i) + "\n");
-                                    toRemoveSync.add(syncAlpha);
-                                    List<Alphabet<String>> iStar = this.findSetsIncluding(sigmaFamily, syncAlpha);
-
-                                    ArrayList<String> mergedSet = new ArrayList<>();
-                                    ArrayList<CompactMealy<String, Word<String>>> trashParts = new ArrayList<>();
-                                    for (Alphabet<String> sigmai : iStar) {
-                                        sigmaFamily.remove(sigmai);
-                                        ArrayList<String> cleaned = this.cleanSet(mergedSet, sigmai);
-                                        mergedSet.addAll(cleaned);
-                                    }
-                                    Alphabet<String> mergedAlphabet = Alphabets.fromList(mergedSet);
-                                    sigmaFamily.add(mergedAlphabet);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                for (String toRemove : toRemoveSync) {
-                    sync.remove(toRemove);
-                    outSync.remove(toRemove);
-                }
-                System.out.println("syn: c" + sync + "\n");
-                List<Alphabet<String>> iD = dependSets(minimalCe, sigmaFamily, sync);
-                System.out.println("iD without syncs: " + iD);
-                ArrayList<String> mergedSet = new ArrayList<>();
-                ArrayList<CompactMealy<String, Word<String>>> trashParts = new ArrayList<>();
-                for (Alphabet<String> sigmai : iD) {
-                    if (exist(sigmai)) {
-                        sigmaFamily.remove(sigmai);
-                    }
-
-                    ArrayList<String> cleaned = this.cleanSet(mergedSet, sigmai);
-                    mergedSet.addAll(cleaned);
-                }
-                for (String syncAlpha : sync) {
-                    for (String ceAlpha : ceList) {
-                        if (ceAlpha.equals(syncAlpha)) {
-                            Alphabet<String> sigmai = new ListAlphabet<String>(Arrays.asList(syncAlpha));
-                            ArrayList<String> cleaned = this.cleanSet(mergedSet, sigmai);
-                            if (isNew(mergedSet, ceAlpha) && exist(sigmai)) {
-                                sigmaFamily.remove(sigmai);
-                            }
-                            mergedSet.addAll(cleaned);
-                            break;
-                        }
-                    }
-                }
-                System.out.println("iD with sync:(merged) " + mergedSet + "\n");
-                Alphabet<String> mergedAlphabet = Alphabets.fromList(mergedSet);
-                sigmaFamily.add(mergedAlphabet);
-                System.out.println("sigmaFamily after merging: " + sigmaFamily + "\n");
+//                ArrayList<String> toRemoveSync = new ArrayList<>();
+//                System.out.println("THE SYNC : " + sync);
+//                System.out.println("OUTSYNC : " + outSync + "\n");
+//                for (String syncAlpha : sync) {
+//                    boolean isInCe = false;
+//                    for (String ceSync : ceList) {
+//                        if (ceSync.equals(syncAlpha)) {
+//                            isInCe = true;
+//                            break;
+//                        }
+//                    }
+//                    if (isInCe) {
+//                        for (Map.Entry<String, Word<String>> current_map : outSync.entrySet()) {
+//                            for (int i = 0; i < ceList.size(); i++) {
+//                                if (!ceList.get(i).equals(syncAlpha)) {
+//                                    continue;
+//                                }
+//                                if (current_map.getKey().equals(syncAlpha) && !current_map.getValue().equals(outCe.get(i))) {
+//                                    System.out.println("Removing SYNC : " + syncAlpha + "  because a different output in the ce");
+//                                    System.out.println("OUTPUT for SYNC : " + current_map.getValue());
+//                                    System.out.println("OUTPUT for Ce : " + outCe.get(i) + "\n");
+//                                    toRemoveSync.add(syncAlpha);
+//                                    List<Alphabet<String>> iStar = this.findSetsIncluding(sigmaFamily, syncAlpha);
+//
+//                                    ArrayList<String> mergedSet = new ArrayList<>();
+//                                    ArrayList<CompactMealy<String, Word<String>>> trashParts = new ArrayList<>();
+//                                    for (Alphabet<String> sigmai : iStar) {
+//                                        sigmaFamily.remove(sigmai);
+//                                        ArrayList<String> cleaned = this.cleanSet(mergedSet, sigmai);
+//                                        mergedSet.addAll(cleaned);
+//                                    }
+//                                    Alphabet<String> mergedAlphabet = Alphabets.fromList(mergedSet);
+//                                    sigmaFamily.add(mergedAlphabet);
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//                for (String toRemove : toRemoveSync) {
+//                    sync.remove(toRemove);
+//                    outSync.remove(toRemove);
+//                }
+//                System.out.println("syn: c" + sync + "\n");
+//                List<Alphabet<String>> iD = dependSets(minimalCe, sigmaFamily, sync);
+//                System.out.println("iD without syncs: " + iD);
+//                ArrayList<String> mergedSet = new ArrayList<>();
+//                ArrayList<CompactMealy<String, Word<String>>> trashParts = new ArrayList<>();
+//                for (Alphabet<String> sigmai : iD) {
+//                    if (exist(sigmai)) {
+//                        sigmaFamily.remove(sigmai);
+//                    }
+//
+//                    ArrayList<String> cleaned = this.cleanSet(mergedSet, sigmai);
+//                    mergedSet.addAll(cleaned);
+//                }
+//                for (String syncAlpha : sync) {
+//                    for (String ceAlpha : ceList) {
+//                        if (ceAlpha.equals(syncAlpha)) {
+//                            Alphabet<String> sigmai = new ListAlphabet<String>(Arrays.asList(syncAlpha));
+//                            ArrayList<String> cleaned = this.cleanSet(mergedSet, sigmai);
+//                            if (isNew(mergedSet, ceAlpha) && exist(sigmai)) {
+//                                sigmaFamily.remove(sigmai);
+//                            }
+//                            mergedSet.addAll(cleaned);
+//                            break;
+//                        }
+//                    }
+//                }
+//                System.out.println("iD with sync:(merged) " + mergedSet + "\n");
+//                Alphabet<String> mergedAlphabet = Alphabets.fromList(mergedSet);
+//                sigmaFamily.add(mergedAlphabet);
+//                System.out.println("sigmaFamily after merging: " + sigmaFamily + "\n");
                 //ProcessCE ends!
 
                 //LearnInParts starts(Learn the single merged):
@@ -438,9 +438,15 @@ public class SclStar {
             sigmaFamily.remove(iD.get(currRemoving));
         }
 
+        List<Alphabet<String>> toAdd = getAlphabets(iD, toMerge);
+        sigmaFamily.addAll(toAdd);
+    }
+
+    private List<Alphabet<String>> getAlphabets(List<Alphabet<String>> iD, HashMap<String, List<Integer>> toMerge) {
         List<Alphabet<String>> toAdd = new ArrayList<>();
         for(List<Integer> currList : toMerge.values()) {
-            Alphabet<String> toAddAlpha = Alphabets.fromList(new ArrayList<>(iD.get(currList.getFirst())));
+            List<String> toAddAlpha = new ArrayList<>(iD.get(currList.getFirst()));
+//            Alphabet<String> toAddAlpha = Alphabets.fromList(new ArrayList<>(iD.get(currList.getFirst())));
             for(int i : currList) {
                 Alphabet<String> toMergeAlpha = iD.get(i);
                 for(String currAct : toMergeAlpha) {
@@ -448,13 +454,79 @@ public class SclStar {
                         toAddAlpha.add(currAct);
                 }
             }
-            toAdd.add(toAddAlpha);
+            toAdd.add(Alphabets.fromList(toAddAlpha));
         }
-        sigmaFamily.addAll(toAdd);
+        return toAdd;
     }
 
     private List<Alphabet<String>> learnSynSets(List<Alphabet<String>> iD) {
-        return new ArrayList<>();
+        List<Alphabet<String>> iDSecond = new ArrayList<>();
+        ProductMealy productMealy = learnSyncInParts();
+        List<String> wrongSynchs = productMealy.getWrongSyncs();
+
+        if(!wrongSynchs.isEmpty()) {
+            for(String currWrong : wrongSynchs) {
+                for(Alphabet<String> currAlpha : iD) {
+                    if(currAlpha.contains(currWrong)) {
+                        boolean shouldAdd = true;
+                        for(Alphabet<String> currSec : iDSecond) {
+                            if(currSec.containsAll(currAlpha) && currAlpha.containsAll(currSec)) {
+                                shouldAdd = false;
+                                break;
+                            }
+                        }
+                        if(shouldAdd) {
+                            iDSecond.add(currAlpha);
+                        }
+                    }
+                }
+            }
+        }
+        return iDSecond;
+    }
+
+    private ProductMealy learnSyncInParts() {
+        ProductMealy productMealy = null;
+        List<CompactMealy<String, Word<String>>> learnedParts = new ArrayList<>();
+        for (Alphabet<String> sigmai : sigmaFamily) {
+//            pre_eq_sym = Long.parseLong(Utils.ExtractValue(eq_sym_counter.getStatisticalData().getSummary()));
+            ExtensibleLStarMealyBuilder<String, Word<String>> builder = new ExtensibleLStarMealyBuilder<String, Word<String>>();
+            builder.setAlphabet(sigmai);
+            builder.setOracle(mqOracle);
+            ExtensibleLStarMealy<String, Word<String>> learner = builder.create();
+            // The experiment will execute the main loop of active learning
+            Experiment.MealyExperiment<String, Word<String>> experiment =
+                    new Experiment.MealyExperiment<String, Word<String>>(learner, partialEqOracle, sigmai);
+            try {
+                FileWriter componentsWriter = new FileWriter( "Log/Learning.txt", true);
+                componentsWriter.write("\tLearn the component " + sigmai.toString() + " using L-Star\n");
+//                componentsWriter.write("WhileCounter: "+ counter + "\n");
+//
+//                if(sigmai.toString().equals("[h]") && counter == 2){
+//                    componentsWriter.write("WhileCounter: "+ counter + "\n");
+//                    componentsWriter.write("WhileCounter: "+ counter + "\n");
+//                }
+                componentsWriter.close();
+            } catch (IOException e) {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
+
+            experiment.run();
+
+            // get learned model
+            CompactMealy<String, Word<String>> partialH = (CompactMealy<String, Word<String>>) experiment.getFinalHypothesis();
+
+            eq_counter.increment(experiment.getRounds().getCount());
+//            post_eq_sym = Long.parseLong(Utils.ExtractValue(eq_sym_counter.getStatisticalData().getSummary()));
+
+            learnedParts.add(partialH);
+            if (productMealy == null) {
+                productMealy = new ProductMealy(partialH);
+            } else productMealy.mergeFSMs(partialH, 1);
+        }
+
+        return productMealy;
     }
 
     private boolean exist(Alphabet<String> sigmai){

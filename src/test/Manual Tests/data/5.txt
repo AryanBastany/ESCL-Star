@@ -1,0 +1,2 @@
+src/test/Manual Tests/resources/5/Component1.dot
+src/test/Manual Tests/resources/5/Component2.dot

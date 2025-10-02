@@ -103,8 +103,10 @@ public class FsmLearner {
             filePath += "src/test/Generated Tests/data/Ring-All-Tests.txt";
         else if(args.get(3).equals("Bus"))
             filePath += "src/test/Generated Tests/data/Bus-All-Tests.txt";
-        else
+        else if(args.get(3).equals("Bipartite"))
             filePath += "src/test/Generated Tests/data/Bipartite-All-Tests.txt";
+        else
+            filePath += "src/test/Manual Tests/data/Manuals.txt";
 
         equivalenceMethod = args.get(0);
         repeat = Integer.parseInt(args.get(2));
