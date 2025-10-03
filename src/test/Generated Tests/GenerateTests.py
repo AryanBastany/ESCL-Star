@@ -34,7 +34,7 @@ class GenerateTest:
                                         self.generateStar, self.generateRing,
                                         self.generateBus, self.generateBipartite]
         
-    def generateSynchComponents(self, synchActions, synchOuts, numOfComponents, type, testCounter, allComponentsCount):
+    def generateSynchComponents(self, synchActions, numOfComponents, type, testCounter, allComponentsCount):
         for i in range(numOfComponents):
             self.componentCounter += 1
             self.experimentInput += ""
@@ -45,7 +45,7 @@ class GenerateTest:
                 numOfStates = random.randint(3, 6)
                 
             
-            componentGenerator = gc.ComponentGenerator(synchActions, synchOuts, unsynchActs, numOfStates)
+            componentGenerator = gc.ComponentGenerator(synchActions, unsynchActs, numOfStates)
             graphString = componentGenerator.generate()
 
             currentFile = 'src/test/Generated Tests/resources/' + type + '/' + str(testCounter) +\
@@ -82,22 +82,19 @@ class GenerateTest:
 
         for twoComponents in range(0, self.numOfComponents - 1, 2):
             synchActs = self.generateActs()
-            outSynchs = [random.randint(0, 1) for i in range(self.numOfEachActs)]
-            self.generateSynchComponents(synchActs, outSynchs, 2, self.POINT_TO_POINT, testCounter, self.numOfComponents)
+            self.generateSynchComponents(synchActs, 2, self.POINT_TO_POINT, testCounter, self.numOfComponents)
         
         if self.numOfComponents % 2 == 1:
             self.numOfEachActs = 2
-            self.generateSynchComponents([], [], 1, self.POINT_TO_POINT, testCounter, self.numOfComponents)
+            self.generateSynchComponents([], 1, self.POINT_TO_POINT, testCounter, self.numOfComponents)
             self.numOfEachActs = 1
             
     def generateMesh(self, testCounter):
         self.writeTheInput(testCounter, self.MESH)
         
         synchsActs = [0] * self.numOfComponents 
-        outSynchs = [0] * self.numOfComponents 
         for i in range(self.numOfComponents):
             synchsActs[i] = [0] * ((self.numOfComponents - 1) * self.numOfEachActs)
-            outSynchs[i] = [0] * ((self.numOfComponents - 1) * self.numOfEachActs)
         
         for component in range(self.numOfComponents):
             for nextComps in range(component + 1 , self.numOfComponents):
@@ -106,42 +103,34 @@ class GenerateTest:
             
                 for synchNum in range(len(currentSynchs)):
                     synchsActs[component][((nextComps-1)*self.numOfEachActs) + synchNum] = currentSynchs[synchNum]
-                    outSynchs[component][((nextComps-1)*self.numOfEachActs) + synchNum] = currentOutSynchs[synchNum]
-                    
+
                     synchsActs[nextComps][(component*self.numOfEachActs) + synchNum] = currentSynchs[synchNum]
-                    outSynchs[nextComps][(component*self.numOfEachActs) + synchNum] = currentOutSynchs[synchNum]
-            self.generateSynchComponents(synchsActs[component], outSynchs[component], 1, self.MESH, testCounter, self.numOfComponents)
+            self.generateSynchComponents(synchsActs[component], 1, self.MESH, testCounter, self.numOfComponents)
             
     def generateStar(self, testCounter):
         self.writeTheInput(testCounter, self.STAR)
         
         centerSynchsActs = []
-        centerOutSynchs = []
         for component in range(self.numOfComponents - 1):
             currentSynchs = self.generateActs()
-            currentOutSynchs = [random.randint(0, 1) for i in range(self.numOfEachActs)] 
             for synchNum in range(len(currentSynchs)):
                 centerSynchsActs.append(currentSynchs[synchNum])
-                centerOutSynchs.append(currentOutSynchs[synchNum])
             
-            self.generateSynchComponents(currentSynchs, currentOutSynchs, 1, self.STAR, testCounter, self.numOfComponents)
-        self.generateSynchComponents(centerSynchsActs, centerOutSynchs, 1, self.STAR, testCounter, self.numOfComponents)
+            self.generateSynchComponents(currentSynchs, 1, self.STAR, testCounter, self.numOfComponents)
+        self.generateSynchComponents(centerSynchsActs, 1, self.STAR, testCounter, self.numOfComponents)
         
     def generateBus(self, testCounter):
         self.writeTheInput(testCounter, self.BUS)
         
         currentSynchs = self.generateActs()
-        currentOutSynchs = [random.randint(0, 1) for i in range(self.numOfEachActs)] 
-        self.generateSynchComponents(currentSynchs, currentOutSynchs, self.numOfComponents, self.BUS, testCounter, self.numOfComponents)
+        self.generateSynchComponents(currentSynchs, self.numOfComponents, self.BUS, testCounter, self.numOfComponents)
     
     def generateRing(self, testCounter):
         self.writeTheInput(testCounter, self.RING)
         
         synchsActs = [0] * self.numOfComponents 
-        outSynchs = [0] * self.numOfComponents 
         for i in range(self.numOfComponents):
             synchsActs[i] = [0] * (2 * self.numOfEachActs)
-            outSynchs[i] = [0] * (2 * self.numOfEachActs)
                 
         for component in range(self.numOfComponents):
             currentSynchs = self.generateActs()
@@ -152,23 +141,19 @@ class GenerateTest:
                 else:
                     nextComp = component + 1
                 synchsActs[component][self.numOfEachActs + synchNum] = currentSynchs[synchNum]
-                outSynchs[component][self.numOfEachActs + synchNum] = currentOutSynchs[synchNum]
                 
                 synchsActs[nextComp][synchNum] = currentSynchs[synchNum]
-                outSynchs[nextComp][synchNum] = currentOutSynchs[synchNum]
         
         for component in range(self.numOfComponents):
-            self.generateSynchComponents(synchsActs[component], outSynchs[component], 1, self.RING, testCounter, self.numOfComponents)
+            self.generateSynchComponents(synchsActs[component], 1, self.RING, testCounter, self.numOfComponents)
             
     def generateBipartite(self, testCounter):
         self.writeTheInput(testCounter, self.BIPARTITE)
         
         synchsActs = [0] * self.numOfComponents 
-        outSynchs = [0] * self.numOfComponents 
         for i in range(self.numOfComponents):
             numOfSynchActs = (self.numOfComponents // 2) + int((self.numOfComponents % 2) and (i < (self.numOfComponents // 2)))
             synchsActs[i] = [0] * (numOfSynchActs * self.numOfEachActs)
-            outSynchs[i] = [0] * (numOfSynchActs * self.numOfEachActs)
         
         for component in range(self.numOfComponents):
             if component < self.numOfComponents//2:
@@ -179,12 +164,9 @@ class GenerateTest:
                     for synchNum in range(len(currentSynchs)):
                         synchsActs[component][((part2Comp-int(self.numOfComponents/2))*self.numOfEachActs) +\
                                             synchNum] = currentSynchs[synchNum]
-                        outSynchs[component][((part2Comp-int(self.numOfComponents/2))*self.numOfEachActs) +\
-                            synchNum] = currentOutSynchs[synchNum]
                         
                         synchsActs[part2Comp][(component*self.numOfEachActs) + synchNum] = currentSynchs[synchNum]
-                        outSynchs[part2Comp][(component*self.numOfEachActs) + synchNum] = currentOutSynchs[synchNum]
-            self.generateSynchComponents(synchsActs[component], outSynchs[component], 1, self.BIPARTITE, testCounter, self.numOfComponents)
+            self.generateSynchComponents(synchsActs[component], 1, self.BIPARTITE, testCounter, self.numOfComponents)
         
     def resetVars(self, type, testCounter):
         self.clearFolder('src/test/Generated Tests/resources/' + type + '/' + str(testCounter))

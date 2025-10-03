@@ -4,9 +4,8 @@ from typing import Final
 from decimal import Decimal
 
 class ComponentGenerator:
-    def __init__(self, synchActions, synchOuts, unsynchActs, numOfStates):
+    def __init__(self, synchActions, unsynchActs, numOfStates):
         self.synchActions: Final[list] = synchActions
-        self.synchOuts: Final[list] = synchOuts
         self.unsynchActs: Final[list] = unsynchActs
         self.numOfStates: Final[int] = numOfStates
         self.IsMinimum: Final[int] = 1
@@ -158,42 +157,59 @@ class ComponentGenerator:
                     firstEmptyIndex += 1
                     isEffective[uncheckedActIndex] = True
         return True
-                
-                
-                    
-        
+                       
+    def findEqualStates(self, stateNum, action):
+        equals = set()
+        for currState in range(self.numOfStates):
+            if self.areFunctionallySameStates(stateNum, currState, action):
+                equals.add(currState)
+        return equals
+
     def generateAll(self, isForTransitions):
-        for stateNum in range(self.numOfStates):
-            for synchNum in range(len(self.synchActions)):
+        self.equalStates = [{i for i in range(self.numOfStates)} for i in range(self.numOfStates)]
+
+        for synchNum in range(len(self.synchActions)):
+            for stateNum in range(self.numOfStates):
                 if(isForTransitions):
-                    self.generateTransition(stateNum, self.synchActions[synchNum], self.synchOuts[synchNum]) 
+                    self.generateTransition(stateNum, self.synchActions[synchNum], [i for i in range(self.numOfStates)]) 
                 else:
-                    self.generateLine(stateNum, self.synchActions[synchNum], self.synchOuts[synchNum])
-            for unsynchNum in range(len(self.unsynchActs)):
+                    self.generateLine(stateNum, self.synchActions[synchNum])
+
+            for stateNum in range(self.numOfStates):
+                self.equalStates[stateNum] &= self.findEqualStates(stateNum, self.synchActions[synchNum])
+
+        for unsynchNum in range(len(self.unsynchActs)):
+            for stateNum in range(self.numOfStates):
                 if(isForTransitions):
-                    self.generateTransition(stateNum, self.unsynchActs[unsynchNum], random.randint(0, 1))
+                    self.generateTransition(stateNum, self.unsynchActs[unsynchNum], list(self.equalStates[stateNum]))
                 else:
-                    self.generateLine(stateNum, self.unsynchActs[unsynchNum], self.transitions[stateNum][self.unsynchActs[unsynchNum]][1])
+                    self.generateLine(stateNum, self.unsynchActs[unsynchNum])
+
+        
 
     def generate(self):
         while True:
             self.generateAll(isForTransitions = True)
+
+            while all(len(self.equalStates[i]) == 1 for i in range(self.numOfStates)):
+                self.generateAll(isForTransitions = True)
             
-            while (not self.isEveryActEffective()):       
-                self.refactorGraph()
+            # while (not self.isEveryActEffective()):       
+            #     self.refactorGraph()
             
-            if (self.isEveryStateReachable()) and (self.isGraphMinimal()):
+            if (self.isEveryStateReachable()) and \
+                (self.isGraphMinimal() and self.isEveryActEffective()):
                 break
         self.generateGraphStr()
         return(self.graph)
 
-    def generateTransition(self, stateNum, action, actionOut):
-        self.transitions[stateNum][action] = [random.randint(0, self.numOfStates - 1), actionOut]
+    def generateTransition(self, stateNum, action, possibleDests):
+        self.transitions[stateNum][action] = [random.choice(possibleDests), random.randint(0, 1)]
             
-    def generateLine(self, stateNum, action, actionOut):
+    def generateLine(self, stateNum, action):
         self.graph += 's' + str(stateNum) + ' -> '
         self.graph += 's' + str(self.transitions[stateNum][action][0])
-        self.graph += ' [label="' + action + '  /  ' + str(actionOut) + '"];\n'
+        self.graph += ' [label="' + action + '  /  ' + str(self.transitions[stateNum][action][1]) + '"];\n'
         
     def generateGraphStr(self):
         self.generateAll(isForTransitions = False)
