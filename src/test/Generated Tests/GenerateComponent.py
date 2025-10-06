@@ -168,7 +168,30 @@ class ComponentGenerator:
             if self.areFunctionallySameStates(stateNum, currState, action):
                 equals.add(currState)
         return equals
-    
+
+    def getMinimalPattern(self, pattern):
+        if not pattern:
+            return pattern
+
+        nxt = [0]*len(pattern)
+        for i in range(1, len(nxt)):
+            k = nxt[i - 1]
+            while True:
+                if pattern[i] == pattern[k]:
+                    nxt[i] = k + 1
+                    break
+                elif k == 0:
+                    nxt[i] = 0
+                    break
+                else:
+                    k = nxt[k - 1]
+
+        smallPieceLen = len(pattern) - nxt[-1]
+        if len(pattern) % smallPieceLen != 0:
+            return pattern
+
+        return pattern[0:smallPieceLen]
+        
 # for a single synch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     def generateSynchOutPattern(self):
         pattern = []
@@ -185,7 +208,10 @@ class ComponentGenerator:
 
             while True:
                 if currVisited[currState]:
-                    pattern.append({BEFORE_LOOP : outs[0:stateIndexes[currState]], LOOP : outs[stateIndexes[currState]:]})
+                    if self.getMinimalPattern(outs) != pattern:
+                        pattern.append({BEFORE_LOOP : '', LOOP : self.getMinimalPattern(outs)})
+                    else:
+                        pattern.append({BEFORE_LOOP : outs[0:stateIndexes[currState]], LOOP : self.getMinimalPattern(outs[stateIndexes[currState]:])})
                     break
                 currVisited[currState] = True
                 outs += str(self.transitions[currState][self.synchActions[0]][1])
