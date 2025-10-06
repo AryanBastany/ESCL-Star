@@ -3,8 +3,12 @@ import random
 from typing import Final
 from decimal import Decimal
 
+WITHOUT_OUT_PATTERN = ''
+BEFORE_LOOP = 0
+LOOP = 1
+
 class ComponentGenerator:
-    def __init__(self, synchActions, unsynchActs, numOfStates):
+    def __init__(self, synchActions, unsynchActs, numOfStates, synchOutPattern):
         self.synchActions: Final[list] = synchActions
         self.unsynchActs: Final[list] = unsynchActs
         self.numOfStates: Final[int] = numOfStates
@@ -14,6 +18,7 @@ class ComponentGenerator:
         self.graph = ''
         self.causeOfNotMin = ''
         self.isReachable = [False] * numOfStates
+        self.synchOutPattern = synchOutPattern
 
     def expandBfsQueue(self, actions, u, queue):
         for act in actions:
@@ -22,7 +27,7 @@ class ComponentGenerator:
                 self.isReachable[v] = True
                 queue.append(v)
 
-    def bfs(self, startState):
+    def bfs(self, startState, actions):
         queue = []
 
         self.isReachable[startState] = True
@@ -31,8 +36,7 @@ class ComponentGenerator:
         while(len(queue) != 0):
             u = queue.pop()
             
-            self.expandBfsQueue(self.synchActions, u, queue)
-            self.expandBfsQueue(self.unsynchActs, u, queue)
+            self.expandBfsQueue(actions, u, queue)
 
             
     def refactorGraph(self):
@@ -69,7 +73,7 @@ class ComponentGenerator:
     
     def isEveryStateReachable(self):
         self.isReachable = [False] * self.numOfStates
-        self.bfs(0)
+        self.bfs(0, self.unsynchActs + self.synchActions)
 
         if(False in self.isReachable):
             return(False)
@@ -82,11 +86,11 @@ class ComponentGenerator:
             self.transitions[sourceState][act][0] = stateId
             numOfPrevReachables = self.isReachable.count(True)
             self.isReachable = [False] * self.numOfStates
-            self.bfs(0)
+            self.bfs(0, self.unsynchActs + self.synchActions)
             if(self.isReachable.count(True) > numOfPrevReachables):
                 return(sinkState)
             self.transitions[sourceState][act][0] = sinkState
-            self.bfs(0)
+            self.bfs(0, self.unsynchActs + self.synchActions)
         return(-1)
 
         
@@ -164,10 +168,41 @@ class ComponentGenerator:
             if self.areFunctionallySameStates(stateNum, currState, action):
                 equals.add(currState)
         return equals
+    
+# for a single synch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    def generateSynchOutPattern(self):
+        pattern = []
+        visitedStates = [False] * self.numOfStates
 
-    def generateAll(self, isForTransitions):
+        for i in range(self.numOfStates):
+            if visitedStates[i]: continue
+
+            outs = ''
+            currState = i
+            currVisited =  [False] * self.numOfStates
+            counter = 0
+            stateIndexes = dict()
+
+            while True:
+                if currVisited[currState]:
+                    pattern.append({BEFORE_LOOP : outs[0:stateIndexes[currState]], LOOP : outs[stateIndexes[currState]:]})
+                    break
+                currVisited[currState] = True
+                outs += str(self.transitions[currState][self.synchActions[0]][1])
+                stateIndexes[currState] = counter
+                currState = self.transitions[currState][self.synchActions[0]][0]
+                counter += 1
+
+            visitedStates = [(visitedStates[j] or currVisited[j]) for j in range(self.numOfStates)]
+        return pattern
+    
+    def generateRelatively(self):
+        pass
+
+    def generateIndependently(self, isForTransitions):
         self.equalStates = [{i for i in range(self.numOfStates)} for i in range(self.numOfStates)]
 
+# for a single synch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         for synchNum in range(len(self.synchActions)):
             for stateNum in range(self.numOfStates):
                 if(isForTransitions):
@@ -185,6 +220,12 @@ class ComponentGenerator:
                 else:
                     self.generateLine(stateNum, self.unsynchActs[unsynchNum])
 
+
+    def generateAll(self, isForTransitions):
+        if self.synchOutPattern == WITHOUT_OUT_PATTERN:
+            self.generateIndependently(isForTransitions)
+        else:
+            self.generateRelatively()
         
 
     def generate(self):
