@@ -35,18 +35,26 @@ class GenerateTest:
                                         self.generateBus, self.generateBipartite]
         
     def generateSynchComponents(self, synchActions, numOfComponents, type, testCounter, allComponentsCount):
+        numsOfStates = [0] * numOfComponents
+        for i in range(numOfComponents):
+            if type != self.MESH:
+                numsOfStates[i] =  random.randint(2, 5) 
+            else: 
+                numsOfStates[i] = random.randint(3, 6)
+        numsOfStates = sorted(numsOfStates)
+        outPattern = {}
         for i in range(numOfComponents):
             self.componentCounter += 1
             self.experimentInput += ""
             unsynchActs = self.generateActs()
-            if(type != self.MESH):
-                numOfStates = random.randint(2, 5)
-            else:
-                numOfStates = random.randint(3, 6)
                 
-            
-            componentGenerator = gc.ComponentGenerator(synchActions, unsynchActs, numOfStates, gc.WITHOUT_OUT_PATTERN)
+            if i == 0:
+                componentGenerator = gc.ComponentGenerator(synchActions, unsynchActs, numsOfStates[i], gc.WITHOUT_OUT_PATTERN)
+            else:
+                componentGenerator = gc.ComponentGenerator(synchActions, unsynchActs, numsOfStates[i], outPattern)
+
             graphString = componentGenerator.generate()
+            outPattern = componentGenerator.generateSynchOutPattern()
 
             currentFile = 'src/test/Generated Tests/resources/' + type + '/' + str(testCounter) +\
                 '/Component' + str(self.componentCounter) + '.dot'
@@ -55,8 +63,6 @@ class GenerateTest:
             self.experimentInput += currentFile + '\n'
         
         self.writeIntoFile('src/test/Generated Tests/data/' + type + '/' + str(testCounter) + '.txt', self.experimentInput)
-
-        return componentGenerator.generateSynchOutPattern()
                 
     def writeIntoFile(self, file, content, writingType = 'w'):
         with open(file, writingType) as writingfile:
@@ -84,8 +90,7 @@ class GenerateTest:
 
         for twoComponents in range(0, self.numOfComponents - 1, 2):
             synchActs = self.generateActs()
-            pattern = self.generateSynchComponents(synchActs, 2, self.POINT_TO_POINT, testCounter, self.numOfComponents)
-            print(pattern)
+            self.generateSynchComponents(synchActs, 2, self.POINT_TO_POINT, testCounter, self.numOfComponents)
         
         if self.numOfComponents % 2 == 1:
             self.numOfEachActs = 2
