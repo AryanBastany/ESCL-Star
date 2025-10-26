@@ -208,8 +208,9 @@ class ComponentGenerator:
 
         while True:
             if currVisited[currState]:
+                bigOut = outs[0:stateIndexes[currState]] + (100 * outs[stateIndexes[currState]:])
                 for i in range(stateIndexes[currState]):
-                    if self.getMinimalPattern(outs[i:]) != outs[i:]:
+                    if self.getMinimalPattern(bigOut[i:]) != bigOut[i:]:
                         pattern = {BEFORE_LOOP : outs[:i], LOOP : self.getMinimalPattern(outs[i:])}
                         break
                 if pattern == {}:
@@ -236,6 +237,8 @@ class ComponentGenerator:
             nextState = self.chooseStateRandomly()
             self.transitions[currentState][self.synchActions[0]] = [nextState, pattern[i]]
             currentState = nextState
+        self.patternIndexes[currentState] = len(pattern[:-1])
+        self.inLoop[currentState] = isForLoop
         self.transitions[currentState][self.synchActions[0]] = [finalState, pattern[-1]]
 
     # def fillLoopCopy(self):
@@ -304,25 +307,62 @@ class ComponentGenerator:
     #             ]
 
     def generateExtraOuts(self, states):
-        pass
+        beforeLoopLen = len(states) - 1
+        if states[-1] in states[:-1] or self.inLoop[states[-1]]:
+            startLoop = len(states) - 1
+            if states[-1] in states[:-1]:
+                startLoop = states.index(states[-1])
+
+                for i in range(startLoop, len(states) - 1):
+                    self.inLoop[states[i]] = True
+        
+            beforeLoopLen = 0
+            for i in range(startLoop - 1, -1, -1):
+                if i + 1 > len(self.synchOutPattern[BEFORE_LOOP]):
+                    self.inLoop[states[i]] = True
+                    continue
+                
+                if random.randint(1, 3) != 3:
+                    beforeLoopLen = i + 1
+                    break
+        patternLen = len(self.synchOutPattern[BEFORE_LOOP]) 
+
+        if (not states[-1] in states[:-1]) and (not self.inLoop[states[-1]]):
+            patternLen = 0
+            currentState = 0
+            while self.patternIndexes[currentState] != self.patternIndexes[states[-1]]:
+                currentState = self.transitions[currentState][self.synchActions[0]][0]
+                patternLen += 1
+        
+        lenDiff = patternLen - beforeLoopLen
+        currentState = 0
+        for i in range(lenDiff):
+            currentState = self.transitions[currentState][self.synchActions[0]][0]
+        for i in range(len(states) - 1):
+            self.transitions[states[i]][self.synchActions[0]][1] = self.transitions[currentState][self.synchActions[0]][1]
+            self.patternIndexes[states[i]] = self.patternIndexes[currentState]
+            currentState = self.transitions[currentState][self.synchActions[0]][0]
 
     def generateExtras(self):
-        currentState = self.chooseStateRandomly()
-        choosable = [i for i in range(self.numOfStates) if self.patternIndexes[i] != 0 or self.inLoop[i]]
-        if len(self.synchOutPattern[LOOP]) != 1 : choosable.remove(currentState)
-        states = [currentState]
-        while True:
-            nextState = random.choice(choosable)
-            states.append(nextState)
-            if nextState in self.freeStates: 
-                self.freeStates.remove(nextState)
-                choosable = [i for i in range(self.numOfStates) if i in self.freeStates or (self.patternIndexes[i] >= len(states) or self.inLoop[i])]
-                for i in range(1, len(states) + 1):
-                    if i % self.synchOutPattern[LOOP] == 0:
-                        choosable.append(states[i])
-            else:
-                self.generateExtraOuts(states)
-                break
+        while len(self.freeStates) != 0:
+            currentState = self.chooseStateRandomly()
+            choosable = [i for i in range(self.numOfStates) if self.patternIndexes[i] != 0 or self.inLoop[i]]
+            if len(self.synchOutPattern[LOOP]) != 1 : choosable.remove(currentState)
+            states = [currentState]
+            while True:
+                nextState = random.choice(choosable)
+                states.append(nextState)
+                self.transitions[currentState][self.synchActions[0]] = [nextState, '']
+                if nextState in self.freeStates: 
+                    self.freeStates.remove(nextState)
+                    choosable = [i for i in range(self.numOfStates) if i in self.freeStates or (self.patternIndexes[i] >= len(states) or self.inLoop[i])]
+                    for i in range(1, len(states) + 1):
+                        if i % len(self.synchOutPattern[LOOP]) == 0:
+                            choosable.append(states[i - 1])
+                else:
+                    self.generateExtraOuts(states)
+                    break
+                currentState = nextState
 
                 
 
@@ -347,13 +387,23 @@ class ComponentGenerator:
         
         self.generateFromPattern(self.synchOutPattern[LOOP], self.loopStartState, self.loopStartState, True)
 
-        assert len(self.freeStates) >= len(self.synchOutPattern[LOOP])
-        assert self.generateSynchOutPattern() == self.synchOutPattern
+        ourPattern = self.generateSynchOutPattern()
+        assert ourPattern == self.synchOutPattern
 
         # numOfExtraStates = random.randint(0, len(self.freeStates) - len(self.synchOutPattern[LOOP]))
         # self.generateExtras(numOfExtraStates)
         # print('asdasdsad')
 
+        self.generateExtras()
+
+        self.equalStates = [{i for i in range(self.numOfStates)} for i in range(self.numOfStates)]
+        for stateNum in range(self.numOfStates):
+            self.equalStates[stateNum] &= self.findEqualStates(stateNum, self.synchActions[0])
+
+
+        for unsynchNum in range(len(self.unsynchActs)):
+            for stateNum in range(self.numOfStates):
+                self.generateTransition(stateNum, self.unsynchActs[unsynchNum], list(self.equalStates[stateNum]))
 
 
     def generateIndependently(self, isForTransitions):
@@ -379,6 +429,8 @@ class ComponentGenerator:
 
 
     def generateAll(self):
+        self.patternIndexes = [-1] * self.numOfStates
+        self.inLoop = [False] * self.numOfStates
         if self.synchOutPattern == WITHOUT_OUT_PATTERN:
             self.generateIndependently(True)
         else:
@@ -388,9 +440,14 @@ class ComponentGenerator:
     def generate(self):
         while True:
             self.generateAll()
+            if len(self.synchActions) == 0:
+                while all(len(self.equalStates[i]) == 1 for i in range(self.numOfStates)):
+                    self.generateAll()
 
-            while all(len(self.equalStates[i]) == 1 for i in range(self.numOfStates)):
-                self.generateAll()
+            else:
+                while all(len(self.equalStates[i]) == 1 for i in range(self.numOfStates)) or \
+                    all(self.transitions[i][self.synchActions[0]][1] == self.transitions[i + 1][self.synchActions[0]][1] for i in range(self.numOfStates - 1)):
+                    self.generateAll()
             
             # while (not self.isEveryActEffective()):       
             #     self.refactorGraph()

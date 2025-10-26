@@ -38,7 +38,7 @@ class GenerateTest:
         numsOfStates = [0] * numOfComponents
         for i in range(numOfComponents):
             if type != self.MESH:
-                numsOfStates[i] =  random.randint(2, 5) 
+                numsOfStates[i] =  random.randint(3, 6) 
             else: 
                 numsOfStates[i] = random.randint(3, 6)
         numsOfStates = sorted(numsOfStates)
@@ -54,7 +54,9 @@ class GenerateTest:
                 componentGenerator = gc.ComponentGenerator(synchActions, unsynchActs, numsOfStates[i], outPattern)
 
             graphString = componentGenerator.generate()
-            outPattern = componentGenerator.generateSynchOutPattern()
+
+            if i != numOfComponents - 1:
+                outPattern = componentGenerator.generateSynchOutPattern()
 
             currentFile = 'src/test/Generated Tests/resources/' + type + '/' + str(testCounter) +\
                 '/Component' + str(self.componentCounter) + '.dot'
