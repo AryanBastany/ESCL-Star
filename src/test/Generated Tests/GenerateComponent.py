@@ -9,7 +9,7 @@ LOOP = 1
 NO_STATE = -1
 
 class ComponentGenerator:
-    def __init__(self, synchActions, unsynchActs, numOfStates, synchOutPattern):
+    def __init__(self, synchActions, unsynchActs, numOfStates, synchOutPattern, staticSynchOut):
         self.synchActions: Final[list] = synchActions
         self.unsynchActs: Final[list] = unsynchActs
         self.numOfStates: Final[int] = numOfStates
@@ -23,6 +23,7 @@ class ComponentGenerator:
         self.equalStates = [{i for i in range(self.numOfStates)} for i in range(self.numOfStates)]
         self.patternIndexes = [-1] * numOfStates
         self.inLoop = [False] * numOfStates
+        self.staticSynchOut = staticSynchOut
 
     def expandBfsQueue(self, actions, u, queue):
         for act in actions:
@@ -440,7 +441,7 @@ class ComponentGenerator:
     def generate(self):
         while True:
             self.generateAll()
-            if len(self.synchActions) == 0:
+            if self.staticSynchOut:
                 while all(len(self.equalStates[i]) == 1 for i in range(self.numOfStates)):
                     self.generateAll()
 

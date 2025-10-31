@@ -34,7 +34,7 @@ class GenerateTest:
                                         self.generateStar, self.generateRing,
                                         self.generateBus, self.generateBipartite]
         
-    def generateSynchComponents(self, synchActions, numOfComponents, type, testCounter, allComponentsCount):
+    def generateSynchComponents(self, synchActions, numOfComponents, type, testCounter, staticSynchOut):
         numsOfStates = [0] * numOfComponents
         for i in range(numOfComponents):
             if type != self.MESH:
@@ -49,9 +49,9 @@ class GenerateTest:
             unsynchActs = self.generateActs()
                 
             if i == 0:
-                componentGenerator = gc.ComponentGenerator(synchActions, unsynchActs, numsOfStates[i], gc.WITHOUT_OUT_PATTERN)
+                componentGenerator = gc.ComponentGenerator(synchActions, unsynchActs, numsOfStates[i], gc.WITHOUT_OUT_PATTERN, staticSynchOut)
             else:
-                componentGenerator = gc.ComponentGenerator(synchActions, unsynchActs, numsOfStates[i], outPattern)
+                componentGenerator = gc.ComponentGenerator(synchActions, unsynchActs, numsOfStates[i], outPattern, staticSynchOut)
 
             graphString = componentGenerator.generate()
 
@@ -90,13 +90,18 @@ class GenerateTest:
     def generatePointTPoint(self, testCounter):
         self.writeTheInput(testCounter, self.POINT_TO_POINT)
 
+        numOfDifferentSynchOuts = random.randint(1, int(self.numOfComponents/2))
         for twoComponents in range(0, self.numOfComponents - 1, 2):
+            staticSynchOut = False
+            if numOfDifferentSynchOuts > 0:
+                staticSynchOut = True
+                numOfDifferentSynchOuts -= 1
             synchActs = self.generateActs()
-            self.generateSynchComponents(synchActs, 2, self.POINT_TO_POINT, testCounter, self.numOfComponents)
+            self.generateSynchComponents(synchActs, 2, self.POINT_TO_POINT, testCounter, self.numOfComponents, staticSynchOut)
         
         if self.numOfComponents % 2 == 1:
             self.numOfEachActs = 2
-            self.generateSynchComponents([], 1, self.POINT_TO_POINT, testCounter, self.numOfComponents)
+            self.generateSynchComponents([], 1, self.POINT_TO_POINT, testCounter, self.numOfComponents, True)
             self.numOfEachActs = 1
             
     def generateMesh(self, testCounter):
