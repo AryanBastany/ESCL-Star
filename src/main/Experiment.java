@@ -84,6 +84,22 @@ public class Experiment {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+
+            try {
+                if (! infoPageInfo.get(3).equalsIgnoreCase("Real")) {
+                    FileWriter myWriter = new FileWriter("Configs/Generated Tests.txt");
+                    myWriter.write(infoPageInfo.get(3) + '\n');
+                    myWriter.write(numOfComponents + "\n");
+                    myWriter.write(String.valueOf(Integer.parseInt(infoPageInfo.get(6)) * 1000));
+                    myWriter.close();
+
+                    System.out.println("Deleting the tests...");
+                    runFile("python", "src/test/Generated Tests/DeleteTests.py");
+                }
+            } catch (IOException e) {
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
         }
 
         scanner.close();

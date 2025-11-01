@@ -270,7 +270,7 @@ public class FsmLearner {
                             @Nullable AtomicReference<CompactMealy> result = new AtomicReference<>(null);
                             data[csvProperties.getIndex(LIP + COMPONENTS)] = String.valueOf(componentsCount);
 
-                            long timeout = 5 * 1000; // 5 min
+                            long timeout = 3000 * 1000; // 3000 min
 
                             // Thread for the called method
                             Alphabet<String> finalAlphabet = alphabet;
@@ -290,7 +290,7 @@ public class FsmLearner {
                                 long elapsedTime = System.currentTimeMillis() - startTime;
                                 if (elapsedTime > timeout) {
                                     methodThread.interrupt(); // Interrupt the thread
-                                    System.out.println("the learning took more than 5 minutes. So it will be skipped");
+                                    System.out.println("the learning took more than 3000 minutes. So it will be skipped");
                                     throw new TimeoutException("Operation timed out after the specified duration.");
                                 }
                                 Thread.sleep(100); // Check every 100ms

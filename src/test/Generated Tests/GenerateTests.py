@@ -97,11 +97,11 @@ class GenerateTest:
                 staticSynchOut = True
                 numOfDifferentSynchOuts -= 1
             synchActs = self.generateActs()
-            self.generateSynchComponents(synchActs, 2, self.POINT_TO_POINT, testCounter, self.numOfComponents, staticSynchOut)
+            self.generateSynchComponents(synchActs, 2, self.POINT_TO_POINT, testCounter, staticSynchOut)
         
         if self.numOfComponents % 2 == 1:
             self.numOfEachActs = 2
-            self.generateSynchComponents([], 1, self.POINT_TO_POINT, testCounter, self.numOfComponents, True)
+            self.generateSynchComponents([], 1, self.POINT_TO_POINT, testCounter, True)
             self.numOfEachActs = 1
             
     def generateMesh(self, testCounter):
