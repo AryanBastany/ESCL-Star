@@ -1,0 +1,13 @@
+digraph g {
+
+	s0 [shape="circle" label="0"];
+	s1 [shape="circle" label="1"];
+	s0 -> s0 [label="as_im_alarm_off  / 1"];
+	s0 -> s1 [label="as_im_alarm_on  /  led_as_im_alarm_on"];
+	s1 -> s0 [label="as_im_alarm_off  /  led_as_im_alarm_off"];
+	s1 -> s1 [label="as_im_alarm_on  / 1"];
+
+__start0 [label="" shape="none" width="0" height="0"];
+__start0 -> s0;
+
+}

@@ -1,0 +1,13 @@
+digraph g {
+
+	s0 [shape="circle" label="0"];
+	s1 [shape="circle" label="1"];
+	s0 -> s1 [label="heating_on  /  led_em_heating_on"];
+	s0 -> s0 [label="heating_off  / 1"];
+	s1 -> s1 [label="heating_on  / 1"];
+	s1 -> s0 [label="heating_off  /  led_em_heating_off"];
+
+__start0 [label="" shape="none" width="0" height="0"];
+__start0 -> s0;
+
+}

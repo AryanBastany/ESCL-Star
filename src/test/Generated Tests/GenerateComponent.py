@@ -9,8 +9,8 @@ LOOP = 1
 NO_STATE = -1
 
 class ComponentGenerator:
-    def __init__(self, synchActions, unsynchActs, numOfStates, synchOutPattern, staticSynchOut):
-        self.synchActions: Final[list] = synchActions
+    def __init__(self, dynamicSynchActs, unsynchActs, numOfStates, synchOutPattern, staticSynchActs, staticSynchOuts, staticSynchOut):
+        self.dynamicSynchActs: Final[list] = dynamicSynchActs
         self.unsynchActs: Final[list] = unsynchActs
         self.numOfStates: Final[int] = numOfStates
         self.IsMinimum: Final[int] = 1
@@ -23,6 +23,8 @@ class ComponentGenerator:
         self.equalStates = [{i for i in range(self.numOfStates)} for i in range(self.numOfStates)]
         self.patternIndexes = [-1] * numOfStates
         self.inLoop = [False] * numOfStates
+        self.staticSynchActs = staticSynchActs
+        self.staticSynchOuts = staticSynchOuts
         self.staticSynchOut = staticSynchOut
 
     def expandBfsQueue(self, actions, u, queue):
@@ -70,7 +72,9 @@ class ComponentGenerator:
     def isEveryActEffective(self):
         if(not self.checkMinForActs(self.unsynchActs)):
             return(False)
-        if(not self.checkMinForActs(self.synchActions)):
+        if(not self.checkMinForActs(self.dynamicSynchActs)):
+            return(False)
+        if(not self.checkMinForActs(self.staticSynchActs)):
             return(False)
         
         return(True)
@@ -78,7 +82,7 @@ class ComponentGenerator:
     
     def isEveryStateReachable(self):
         self.isReachable = [False] * self.numOfStates
-        self.bfs(0, self.unsynchActs + self.synchActions)
+        self.bfs(0, self.unsynchActs + self.dynamicSynchActs + self.staticSynchActs)
 
         if(False in self.isReachable):
             return(False)
@@ -91,11 +95,11 @@ class ComponentGenerator:
             self.transitions[sourceState][act][0] = stateId
             numOfPrevReachables = self.isReachable.count(True)
             self.isReachable = [False] * self.numOfStates
-            self.bfs(0, self.unsynchActs + self.synchActions)
+            self.bfs(0, self.unsynchActs + self.dynamicSynchActs + self.staticSynchActs)
             if(self.isReachable.count(True) > numOfPrevReachables):
                 return(sinkState)
             self.transitions[sourceState][act][0] = sinkState
-            self.bfs(0, self.unsynchActs + self.synchActions)
+            self.bfs(0, self.unsynchActs + self.dynamicSynchActs + self.staticSynchActs)
         return(-1)
 
         
@@ -145,7 +149,7 @@ class ComponentGenerator:
         return False
                 
     def isGraphMinimal(self):
-        allActs = self.synchActions + self.unsynchActs
+        allActs = self.dynamicSynchActs + self.staticSynchActs + self.unsynchActs
         isEffective = [False] * len(allActs)
         effectives = [-1] * len(allActs)
         
@@ -218,9 +222,9 @@ class ComponentGenerator:
                     pattern = {BEFORE_LOOP : outs[0:stateIndexes[currState]], LOOP : self.getMinimalPattern(outs[stateIndexes[currState]:])}
                 break
             currVisited[currState] = True
-            outs += str(self.transitions[currState][self.synchActions[0]][1])
+            outs += str(self.transitions[currState][self.dynamicSynchActs[0]][1])
             stateIndexes[currState] = counter
-            currState = self.transitions[currState][self.synchActions[0]][0]
+            currState = self.transitions[currState][self.dynamicSynchActs[0]][0]
             counter += 1
 
         return pattern
@@ -236,11 +240,11 @@ class ComponentGenerator:
             self.patternIndexes[currentState] = i
             self.inLoop[currentState] = isForLoop
             nextState = self.chooseStateRandomly()
-            self.transitions[currentState][self.synchActions[0]] = [nextState, pattern[i]]
+            self.transitions[currentState][self.dynamicSynchActs[0]] = [nextState, pattern[i]]
             currentState = nextState
         self.patternIndexes[currentState] = len(pattern[:-1])
         self.inLoop[currentState] = isForLoop
-        self.transitions[currentState][self.synchActions[0]] = [finalState, pattern[-1]]
+        self.transitions[currentState][self.dynamicSynchActs[0]] = [finalState, pattern[-1]]
 
     # def fillLoopCopy(self):
     #     currState = self.loopStartState
@@ -332,17 +336,17 @@ class ComponentGenerator:
             patternLen = 0
             currentState = 0
             while self.patternIndexes[currentState] != self.patternIndexes[states[-1]]:
-                currentState = self.transitions[currentState][self.synchActions[0]][0]
+                currentState = self.transitions[currentState][self.dynamicSynchActs[0]][0]
                 patternLen += 1
         
         lenDiff = patternLen - beforeLoopLen
         currentState = 0
         for i in range(lenDiff):
-            currentState = self.transitions[currentState][self.synchActions[0]][0]
+            currentState = self.transitions[currentState][self.dynamicSynchActs[0]][0]
         for i in range(len(states) - 1):
-            self.transitions[states[i]][self.synchActions[0]][1] = self.transitions[currentState][self.synchActions[0]][1]
+            self.transitions[states[i]][self.dynamicSynchActs[0]][1] = self.transitions[currentState][self.dynamicSynchActs[0]][1]
             self.patternIndexes[states[i]] = self.patternIndexes[currentState]
-            currentState = self.transitions[currentState][self.synchActions[0]][0]
+            currentState = self.transitions[currentState][self.dynamicSynchActs[0]][0]
 
     def generateExtras(self):
         while len(self.freeStates) != 0:
@@ -353,7 +357,7 @@ class ComponentGenerator:
             while True:
                 nextState = random.choice(choosable)
                 states.append(nextState)
-                self.transitions[currentState][self.synchActions[0]] = [nextState, '']
+                self.transitions[currentState][self.dynamicSynchActs[0]] = [nextState, '']
                 if nextState in self.freeStates: 
                     self.freeStates.remove(nextState)
                     choosable = [i for i in range(self.numOfStates) if i in self.freeStates or (self.patternIndexes[i] >= len(states) or self.inLoop[i])]
@@ -399,34 +403,45 @@ class ComponentGenerator:
 
         self.equalStates = [{i for i in range(self.numOfStates)} for i in range(self.numOfStates)]
         for stateNum in range(self.numOfStates):
-            self.equalStates[stateNum] &= self.findEqualStates(stateNum, self.synchActions[0])
+            self.equalStates[stateNum] &= self.findEqualStates(stateNum, self.dynamicSynchActs[0])
 
 
         for unsynchNum in range(len(self.unsynchActs)):
             for stateNum in range(self.numOfStates):
-                self.generateTransition(stateNum, self.unsynchActs[unsynchNum], list(self.equalStates[stateNum]))
+                self.generateTransition(stateNum, self.unsynchActs[unsynchNum], list(self.equalStates[stateNum]), random.randint(0, 1))
+
+        for staticSynchNum in range(len(self.staticSynchActs)):
+            for stateNum in range(self.numOfStates):
+                self.generateTransition(stateNum, self.staticSynchActs[staticSynchNum], list(self.equalStates[stateNum]), self.staticSynchOuts[staticSynchNum])
 
 
     def generateIndependently(self, isForTransitions):
         self.equalStates = [{i for i in range(self.numOfStates)} for i in range(self.numOfStates)]
 
 # for a single synch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        for synchNum in range(len(self.synchActions)):
+        for synchNum in range(len(self.dynamicSynchActs)):
             for stateNum in range(self.numOfStates):
                 if(isForTransitions):
-                    self.generateTransition(stateNum, self.synchActions[synchNum], [i for i in range(self.numOfStates)]) 
+                    self.generateTransition(stateNum, self.dynamicSynchActs[synchNum], [i for i in range(self.numOfStates)], random.randint(0, 1)) 
                 else:
-                    self.generateLine(stateNum, self.synchActions[synchNum])
+                    self.generateLine(stateNum, self.dynamicSynchActs[synchNum])
 
             for stateNum in range(self.numOfStates):
-                self.equalStates[stateNum] &= self.findEqualStates(stateNum, self.synchActions[synchNum])
+                self.equalStates[stateNum] &= self.findEqualStates(stateNum, self.dynamicSynchActs[synchNum])
 
         for unsynchNum in range(len(self.unsynchActs)):
             for stateNum in range(self.numOfStates):
                 if(isForTransitions):
-                    self.generateTransition(stateNum, self.unsynchActs[unsynchNum], list(self.equalStates[stateNum]))
+                    self.generateTransition(stateNum, self.unsynchActs[unsynchNum], list(self.equalStates[stateNum]), random.randint(0, 1))
                 else:
                     self.generateLine(stateNum, self.unsynchActs[unsynchNum])
+
+        for staticSynchNum in range(len(self.staticSynchActs)):
+            for stateNum in range(self.numOfStates):
+                if(isForTransitions):
+                    self.generateTransition(stateNum, self.staticSynchActs[staticSynchNum], list(self.equalStates[stateNum]), self.staticSynchOuts[staticSynchNum])
+                else:
+                    self.generateLine(stateNum, self.staticSynchActs[staticSynchNum])
 
 
     def generateAll(self):
@@ -447,7 +462,7 @@ class ComponentGenerator:
 
             else:
                 while all(len(self.equalStates[i]) == 1 for i in range(self.numOfStates)) or \
-                    all(self.transitions[i][self.synchActions[0]][1] == self.transitions[i + 1][self.synchActions[0]][1] for i in range(self.numOfStates - 1)):
+                    all(self.transitions[i][self.dynamicSynchActs[0]][1] == self.transitions[i + 1][self.dynamicSynchActs[0]][1] for i in range(self.numOfStates - 1)):
                     self.generateAll()
             
             # while (not self.isEveryActEffective()):       
@@ -459,8 +474,8 @@ class ComponentGenerator:
         self.generateGraphStr()
         return(self.graph)
 
-    def generateTransition(self, stateNum, action, possibleDests):
-        self.transitions[stateNum][action] = [random.choice(possibleDests), random.randint(0, 1)]
+    def generateTransition(self, stateNum, action, possibleDests, output):
+        self.transitions[stateNum][action] = [random.choice(possibleDests), output]
             
     def generateLine(self, stateNum, action):
         self.graph += 's' + str(stateNum) + ' -> '

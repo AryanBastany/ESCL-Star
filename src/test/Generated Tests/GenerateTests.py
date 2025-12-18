@@ -34,7 +34,7 @@ class GenerateTest:
                                         self.generateStar, self.generateRing,
                                         self.generateBus, self.generateBipartite]
         
-    def generateSynchComponents(self, synchActions, numOfComponents, type, testCounter, staticSynchOut):
+    def generateSynchComponents(self, dynamicSynchActs, numOfComponents, type, testCounter, staticSynchActs, staticSynchOuts, staticSynchOut):
         numsOfStates = [0] * numOfComponents
         for i in range(numOfComponents):
             if type != self.MESH:
@@ -49,9 +49,9 @@ class GenerateTest:
             unsynchActs = self.generateActs()
                 
             if i == 0:
-                componentGenerator = gc.ComponentGenerator(synchActions, unsynchActs, numsOfStates[i], gc.WITHOUT_OUT_PATTERN, staticSynchOut)
+                componentGenerator = gc.ComponentGenerator(dynamicSynchActs, unsynchActs, numsOfStates[i], gc.WITHOUT_OUT_PATTERN, staticSynchActs[i], staticSynchOuts[i], staticSynchOut)
             else:
-                componentGenerator = gc.ComponentGenerator(synchActions, unsynchActs, numsOfStates[i], outPattern, staticSynchOut)
+                componentGenerator = gc.ComponentGenerator(dynamicSynchActs, unsynchActs, numsOfStates[i], outPattern, staticSynchActs[i], staticSynchOuts[i], staticSynchOut)
 
             graphString = componentGenerator.generate()
 
@@ -97,11 +97,11 @@ class GenerateTest:
                 staticSynchOut = True
                 numOfDifferentSynchOuts -= 1
             synchActs = self.generateActs()
-            self.generateSynchComponents(synchActs, 2, self.POINT_TO_POINT, testCounter, staticSynchOut)
+            self.generateSynchComponents(synchActs, 2, self.POINT_TO_POINT, testCounter, [], [],  staticSynchOut)
         
         if self.numOfComponents % 2 == 1:
             self.numOfEachActs = 2
-            self.generateSynchComponents([], 1, self.POINT_TO_POINT, testCounter, True)
+            self.generateSynchComponents([], 1, self.POINT_TO_POINT, testCounter, [], [], True)
             self.numOfEachActs = 1
             
     def generateMesh(self, testCounter):
@@ -144,8 +144,10 @@ class GenerateTest:
         self.writeTheInput(testCounter, self.RING)
         
         synchsActs = [0] * self.numOfComponents 
+        synchOuts = [0] * self.numOfComponents 
         for i in range(self.numOfComponents):
             synchsActs[i] = [0] * (2 * self.numOfEachActs)
+            synchOuts[i] = [0] * (2 * self.numOfEachActs)
                 
         for component in range(self.numOfComponents):
             currentSynchs = self.generateActs()
@@ -156,11 +158,25 @@ class GenerateTest:
                 else:
                     nextComp = component + 1
                 synchsActs[component][self.numOfEachActs + synchNum] = currentSynchs[synchNum]
+                synchOuts[component][self.numOfEachActs + synchNum] = currentOutSynchs[synchNum]
                 
                 synchsActs[nextComp][synchNum] = currentSynchs[synchNum]
+                synchOuts[nextComp][synchNum] = currentOutSynchs[synchNum]
         
-        for component in range(self.numOfComponents):
-            self.generateSynchComponents(synchsActs[component], 1, self.RING, testCounter, self.numOfComponents)
+        # for component in range(self.numOfComponents):
+        #     self.generateSynchComponents(synchsActs[component], 1, self.RING, testCounter, self.numOfComponents)
+
+
+        numOfDifferentSynchOuts = random.randint(1, int(self.numOfComponents/2))
+        for twoComponents in range(0, self.numOfComponents - 1, 2):
+            staticSynchOut = False
+            if numOfDifferentSynchOuts > 0:
+                staticSynchOut = True
+                numOfDifferentSynchOuts -= 1
+            self.generateSynchComponents([synchsActs[twoComponents][1]], 2, self.RING, testCounter, [[synchsActs[twoComponents][0]], [synchsActs[twoComponents + 1][1]]], [[synchOuts[twoComponents][0]], [synchOuts[twoComponents + 1][1]]], staticSynchOut)
+        
+        if self.numOfComponents % 2 == 1:
+            self.generateSynchComponents([], 1, self.RING, testCounter, [[synchsActs[self.numOfComponents - 1][0], synchsActs[self.numOfComponents - 1][1]]], [[synchOuts[self.numOfComponents - 1][0], synchOuts[self.numOfComponents - 1][1]]], True)
             
     def generateBipartite(self, testCounter):
         self.writeTheInput(testCounter, self.BIPARTITE)
