@@ -124,15 +124,18 @@ class GenerateTest:
             
     def generateStar(self, testCounter):
         self.writeTheInput(testCounter, self.STAR)
-        
-        centerSynchsActs = []
-        for component in range(self.numOfComponents - 1):
+
+        centerSynchActs = []
+        centerSynchOuts = []
+        for component in range(self.numOfComponents - 2):
             currentSynchs = self.generateActs()
+            currentOut = random.randint(0, 1)
             for synchNum in range(len(currentSynchs)):
-                centerSynchsActs.append(currentSynchs[synchNum])
+                centerSynchActs.append(currentSynchs[synchNum])
+                centerSynchOuts.append(currentOut)
             
-            self.generateSynchComponents(currentSynchs, 1, self.STAR, testCounter, self.numOfComponents)
-        self.generateSynchComponents(centerSynchsActs, 1, self.STAR, testCounter, self.numOfComponents)
+            self.generateSynchComponents([], 1, self.STAR, testCounter, [currentSynchs], [[currentOut]], True)
+        self.generateSynchComponents(self.generateActs(), 2, self.STAR, testCounter, [[], centerSynchActs], [[], centerSynchOuts], False)
         
     def generateBus(self, testCounter):
         self.writeTheInput(testCounter, self.BUS)
