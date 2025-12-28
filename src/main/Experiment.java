@@ -61,7 +61,7 @@ public class Experiment {
                     myWriter.close();
 
                     System.out.println("Choosing the Real tests components...");
-//                    runFile("python", "src/test/Real Tests/ChooseTests.py");
+                    runFile("python", "src/test/Real Tests/ChooseTests.py");
                 } else {
                     FileWriter myWriter = new FileWriter("Configs/Generated Tests.txt");
                     myWriter.write(infoPageInfo.get(3) + '\n');

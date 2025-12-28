@@ -16,36 +16,28 @@ COMPONENTS: Final[list] = [
                  "4_19_BCS_LED_AS_Alarm_D.dot", "4_20_MCS_LED_AS_IMA.dot",
                  "4_21_BCS_AS.dot", "BCS_PW_4.dot"
              ]
+
 SYNCHS: Final[list] = [
-            [
-                "4_1_BCS_MPW.dot", "4_2_BCS_APW.dot",
-                "4_3_BCS_FP.dot", "BCS_PW_4.dot"
-            ]
-            ,
-            [
-                "4_6_BCS_CLS.dot", "4_21_BCS_AS.dot"
-            ]
-            ,
-            [
-                "4_2_BCS_APW.dot", "4_5_BCS_LED_FP.dot"
-            ]
-            ,
-            [
-                "4_1_BCS_MPW.dot", "4_5_BCS_LED_FP.dot"
-            ]
-            ,
-            [
-                "4_12_BCS_LED_EMT.dot", "4_14_BCS_LED_EMB.dot"
-            ]
-            ,
-            [
-                "4_13_MCS_LED_EML.dot", "4_15_BCS_LED_EMR.dot"
-            ]
-            ,
-            [
-                "4_5_BCS_LED_FP.dot", "BCS_PW_4.dot"
-            ]
-         ]
+    [
+        "4_1_BCS_MPW.dot",
+        "4_2_BCS_APW.dot",
+        "4_3_BCS_FP.dot",
+        "4_5_BCS_LED_FP.dot",
+        "BCS_PW_4.dot"
+    ],
+    [
+        "4_6_BCS_CLS.dot",
+        "4_21_BCS_AS.dot"
+    ],
+    [
+        "4_12_BCS_LED_EMT.dot",
+       " 4_14_BCS_LED_EMB.dot"
+    ],
+    [
+        "4_13_MCS_LED_EML.dot",
+        "4_15_BCS_LED_EMR.dot"
+    ]
+]
 
 TESTS_FOLDER = "src/test/Real Tests/resources/"
 
