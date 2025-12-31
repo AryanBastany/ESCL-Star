@@ -92,9 +92,9 @@ class GenerateTest:
 
         numOfDifferentSynchOuts = random.randint(1, int(self.numOfComponents/2))
         for twoComponents in range(0, self.numOfComponents - 1, 2):
-            staticSynchOut = False
+            staticSynchOut = True
             if numOfDifferentSynchOuts > 0:
-                staticSynchOut = True
+                staticSynchOut = False
                 numOfDifferentSynchOuts -= 1
             synchActs = self.generateActs()
             self.generateSynchComponents(synchActs, 2, self.POINT_TO_POINT, testCounter, [], [],  staticSynchOut)
@@ -107,20 +107,31 @@ class GenerateTest:
     def generateMesh(self, testCounter):
         self.writeTheInput(testCounter, self.MESH)
         
-        synchsActs = [0] * self.numOfComponents 
+        synchsActs = [0] * self.numOfComponents
+        synchOuts = [0] * self.numOfComponents 
         for i in range(self.numOfComponents):
             synchsActs[i] = [0] * ((self.numOfComponents - 1) * self.numOfEachActs)
-        
+            synchOuts[i] = [0] * ((self.numOfComponents - 1) * self.numOfEachActs)
+
         for component in range(self.numOfComponents):
             for nextComps in range(component + 1 , self.numOfComponents):
+                if component == 0 and nextComps == 1:
+                    continue
+
                 currentSynchs = self.generateActs()
                 currentOutSynchs = [random.randint(0, 1) for i in range(self.numOfEachActs)]
             
                 for synchNum in range(len(currentSynchs)):
                     synchsActs[component][((nextComps-1)*self.numOfEachActs) + synchNum] = currentSynchs[synchNum]
+                    synchOuts[component][((nextComps-1)*self.numOfEachActs) + synchNum] = currentOutSynchs[synchNum]
 
                     synchsActs[nextComps][(component*self.numOfEachActs) + synchNum] = currentSynchs[synchNum]
-            self.generateSynchComponents(synchsActs[component], 1, self.MESH, testCounter, self.numOfComponents)
+                    synchOuts[nextComps][(component*self.numOfEachActs) + synchNum] = currentOutSynchs[synchNum]
+
+            if component == 1:
+                self.generateSynchComponents(self.generateActs(), 2, self.MESH, testCounter, [synchsActs[component - 1][1:], synchsActs[component][1:]], [synchOuts[component - 1][1:], synchOuts[component][1:]], False)
+            elif component != 0:
+                self.generateSynchComponents([], 1, self.MESH, testCounter, [synchsActs[component]], [synchOuts[component]], True)
             
     def generateStar(self, testCounter):
         self.writeTheInput(testCounter, self.STAR)
@@ -172,9 +183,9 @@ class GenerateTest:
 
         numOfDifferentSynchOuts = random.randint(1, int(self.numOfComponents/2))
         for twoComponents in range(0, self.numOfComponents - 1, 2):
-            staticSynchOut = False
+            staticSynchOut = True
             if numOfDifferentSynchOuts > 0:
-                staticSynchOut = True
+                staticSynchOut = False
                 numOfDifferentSynchOuts -= 1
             self.generateSynchComponents([synchsActs[twoComponents][1]], 2, self.RING, testCounter, [[synchsActs[twoComponents][0]], [synchsActs[twoComponents + 1][1]]], [[synchOuts[twoComponents][0]], [synchOuts[twoComponents + 1][1]]], staticSynchOut)
         
